@@ -57,7 +57,7 @@ services:
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.14.0
     hostname: wazuh.dashboard
-    restart: always
+    restart: unless-stopped
     environment:
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - OPENSEARCH_USERNAME=admin
