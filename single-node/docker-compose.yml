@@ -41,6 +41,7 @@ services:
     restart: always
     environment:
       - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=SecretPassword"
     ulimits:
       memlock:
         soft: -1
@@ -59,19 +60,20 @@ services:
     restart: always
     environment:
       - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=W38-wH332y-M354
+      - INDEXER_PASSWORD=SecretPassword
       - WAZUH_API_URL=https://wazuh.manager:55000
       - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=61Nn-8Yk3-Er535
+      - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - OPENSEARCH_USERNAME=admin
-      - OPENSEARCH_PASSWORD=mAy-dO0h1ck3y-5uD0r
+      - OPENSEARCH_PASSWORD=SecretPassword
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=5601
+      - NODE_OPTIONS=--max-old-space-size=2048
+    # Remove the config volume - let container use internal config
     volumes:
-      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-data:/usr/share/wazuh-dashboard/data
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
@@ -97,7 +99,6 @@ volumes:
   filebeat_etc:
   filebeat_var:
   wazuh-indexer-data:
-  wazuh-dashboard-config:
   wazuh-dashboard-data:
   wazuh-dashboard-custom:
 
