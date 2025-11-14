@@ -1,7 +1,7 @@
 # Wazuh Single Node Stack - Working Version
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.14.0
+    image: wazuh/wazuh-manager:4.13.0
     hostname: wazuh.manager
     restart: always
     ports:
@@ -29,7 +29,7 @@ services:
       - dokploy-network
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:4.14.0
+    image: wazuh/wazuh-indexer:4.13.0
     hostname: wazuh.indexer
     restart: always
     environment:
@@ -46,7 +46,7 @@ services:
       - dokploy-network
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.14.0
+    image: wazuh/wazuh-dashboard:4.13.0
     hostname: wazuh.dashboard
     restart: always
     environment:
