@@ -1,6 +1,6 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
-  wazuh-manager:
+  wazuh.manager:
     image: wazuh/wazuh-manager:4.14.2
     hostname: wazuh.manager
     restart: always
@@ -39,7 +39,7 @@ services:
     networks:
       - wazuh-network
 
-  wazuh-indexer:
+  wazuh.indexer:
     image: wazuh/wazuh-indexer:4.14.2
     hostname: wazuh.indexer
     restart: always
@@ -65,7 +65,7 @@ services:
     networks:
       - wazuh-network
 
-  wazuh-dashboard:
+  wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.14.2
     hostname: wazuh.dashboard
     restart: always
