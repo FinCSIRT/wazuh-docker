@@ -12,15 +12,10 @@ services:
         soft: 655360
         hard: 655360
     ports:
-      # Agent Registration (TCP)
       - "1514:1514"
-      # Agent Enrollment (TCP)
       - "1515:1515"
-      # Syslog (UDP)
       - "514:514/udp"
-    expose:
-      # Wazuh API (This is the port you will use in Dokploy UI)
-      - "55000"
+      - "55000:55000"
     environment:
       - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
