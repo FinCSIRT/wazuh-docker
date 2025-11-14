@@ -70,8 +70,12 @@ services:
     image: wazuh/wazuh-dashboard:4.9.0
     hostname: wazuh.dashboard
     restart: always
-    ports:
-      - 443:5601
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.wazuh_dashboard.rule=Host(`wazuh.fincident.org`)"
+      - "traefik.http.routers.wazuh_dashboard.entrypoints=websecure"
+      - "traefik.http.routers.wazuh_dashboard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.wazuh_dashboard.loadbalancer.server.port=5601"
     environment:
       - "INDEXER_USERNAME=${INDEXER_USERNAME}"
       - "INDEXER_PASSWORD=${INDEXER_PASSWORD}"
