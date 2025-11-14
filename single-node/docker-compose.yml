@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.14.0
+    image: wazuh/wazuh-manager:4.14.0  # Use 4.14.0 for stability
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -39,9 +39,8 @@ services:
     image: wazuh/wazuh-indexer:4.14.0
     hostname: wazuh.indexer
     restart: always
-    # Removed port 9200 - internal only for security
     environment:
-      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
       - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=SecretPassword"
     ulimits:
       memlock:
@@ -59,22 +58,16 @@ services:
     image: wazuh/wazuh-dashboard:4.14.0
     hostname: wazuh.dashboard
     restart: always
-    # Removed port 443:5601 - using Traefik instead
     environment:
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=SecretPassword
-      - WAZUH_API_URL=https://wazuh.manager:55000
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
+      - OPENSEARCH_USERNAME=admin
+      - OPENSEARCH_PASSWORD=SecretPassword
       - SERVER_HOST=0.0.0.0
       - SERVER_PORT=5601
+      - NODE_OPTIONS=--max-old-space-size=2048
+    # REMOVED config volume - container will use internal config
     volumes:
-      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-data:/usr/share/wazuh-dashboard/data
-      - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
       - wazuh.indexer
     labels:
@@ -98,9 +91,7 @@ volumes:
   filebeat_etc:
   filebeat_var:
   wazuh-indexer-data:
-  wazuh-dashboard-config:
-  wazuh-dashboard-data:
-  wazuh-dashboard-custom:
+  wazuh-dashboard-data:  # Only data volume, no config volume
 
 networks:
   dokploy-network:
