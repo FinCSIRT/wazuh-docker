@@ -32,9 +32,9 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
-      - ./wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
     networks:
       - dokploy-network
 
@@ -63,11 +63,11 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - ./wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
     networks:
       - dokploy-network
 
@@ -90,9 +90,9 @@ services:
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
-      - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
