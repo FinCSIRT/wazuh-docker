@@ -5,7 +5,7 @@
 services:
   # --- 1. Certificate Generator (Runs once to fix EISDIR errors) ---
   generate-certs:
-    image: wazuh/wazuh-certs-tool:4.9.2
+    image: wazuh/wazuh-certs-tool:4.14.1
     command: >
       bash -c '
         if [ ! -f /certs/root-ca.pem ]; then
@@ -22,7 +22,7 @@ services:
 
   # --- 2. Wazuh Indexer (The Database) ---
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:4.9.2
+    image: wazuh/wazuh-indexer:4.14.1
     restart: always
     ports:
       - "9200" # Internal Dokploy port
@@ -58,7 +58,7 @@ services:
 
   # --- 3. Wazuh Manager (The Server) ---
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.9.2
+    image: wazuh/wazuh-manager:4.14.1
     restart: always
     ulimits:
       memlock:
@@ -98,7 +98,7 @@ services:
 
   # --- 4. Wazuh Dashboard (The UI) ---
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.9.2
+    image: wazuh/wazuh-dashboard:4.14.1
     restart: always
     expose:
       - "5601" # UI Port
