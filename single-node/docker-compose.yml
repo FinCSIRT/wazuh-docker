@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.14.1
+    image: wazuh/wazuh-manager:5.0.0
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -11,8 +11,6 @@ services:
       nofile:
         soft: 655360
         hard: 655360
-    # Removed port mappings for 1514, 1515, 514, 55000 - these will be handled internally
-    # Only expose necessary ports for internal communication
     expose:
       - "1514"
       - "1515"
@@ -26,6 +24,8 @@ services:
       - INDEXER_PASSWORD=admin
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      # Disable TLS verification for internal communication since we're not using proper certificates
+      - WAZUH_INDEXER_SSL_VERIFY=false
     volumes:
       - wazuh_api_configuration:/var/ossec/api/configuration
       - wazuh_etc:/var/ossec/etc
@@ -34,27 +34,26 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      # Using internal Wazuh certificates since we're using Traefik for external TLS
-      - wazuh_internal_certs:/etc/filebeat/certs
     networks:
       - dokploy-network
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:4.14.1
+    image: wazuh/wazuh-indexer:5.0.0
     hostname: wazuh.indexer
     restart: always
-    # Removed port 9200 mapping - internal only
     expose:
       - "9200"
     environment:
       - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g
       - bootstrap.memory_lock=true
-      - network.host=wazuh.indexer
+      - network.host=0.0.0.0
       - node.name=wazuh.indexer
       - cluster.initial_cluster_manager_nodes=wazuh.indexer
       - node.max_local_storage_nodes=1
       - plugins.security.allow_default_init_securityindex=true
-      - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
+      - plugins.security.ssl.http.enabled=false
+      - plugins.security.ssl.transport.enabled=false
+      - plugins.security.authcz.admin_dn=["CN=admin,OU=Wazuh,O=Wazuh,L=California,C=US"]
     ulimits:
       memlock:
         soft: -1
@@ -64,22 +63,19 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
-      # Using internal Wazuh certificates
-      - wazuh_internal_certs:/usr/share/wazuh-indexer/config/certs
     networks:
       - dokploy-network
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.14.1
+    image: wazuh/wazuh-dashboard:5.0.0
     hostname: wazuh.dashboard
     restart: always
-    # Removed port 443 mapping - using Traefik instead
     expose:
       - "5601"
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
-      - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
+      - OPENSEARCH_HOSTS=http://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=admin
       - WAZUH_API_URL=https://wazuh.manager
@@ -87,16 +83,16 @@ services:
       - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=wazuh-wui
       - API_PASSWORD=MyS3cr37P450r.*-
+      - OPENSEARCH_SSL_VERIFICATIONMODE=none
     volumes:
-      # Using internal Wazuh certificates
-      - wazuh_internal_certs:/usr/share/wazuh-dashboard/config/certs
-      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
+      - wazuh-dashboard-config:/usr/share/wazuh-dashboard/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
       - wazuh.indexer
+      - wazuh.manager
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.wazuh-dashboard.rule=Host(`wazuh.fincident.org`)" # Replace with your domain
+      - "traefik.http.routers.wazuh-dashboard.rule=Host(`wazuh.fincident.org`)"
       - "traefik.http.routers.wazuh-dashboard.entrypoints=websecure"
       - "traefik.http.routers.wazuh-dashboard.tls=true"
       - "traefik.http.services.wazuh-dashboard.loadbalancer.server.port=5601"
@@ -114,7 +110,6 @@ volumes:
   wazuh-indexer-data:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:
-  wazuh_internal_certs: # Volume for internal certificates
 
 networks:
   dokploy-network:
