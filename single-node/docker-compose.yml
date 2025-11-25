@@ -61,12 +61,16 @@ services:
         soft: 65536
         hard: 65536
     volumes:
-      - wazuh-indexer-data:/var/lib/wazuh-indexer
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - ./wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+     - wazuh_api_configuration:/var/ossec/api/configuration
+      - wazuh_etc:/var/ossec/etc
+      - wazuh_logs:/var/ossec/logs
+      - wazuh_queue:/var/ossec/queue
+      - wazuh_var_multigroups:/var/ossec/var/multigroups
+      - wazuh_active_response:/var/ossec/active-response/bin
+      - wazuh_wodles:/var/ossec/wodles
+      - ./single-node/wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
+      - ./single-node/wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
+      - ./single-node/wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
 
   wazuh.dashboard:
     image: wazuh/wazuh-dashboard:4.14.1
@@ -86,9 +90,9 @@ services:
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
-      - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - ./single-node/wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
+      - ./single-node/wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+      - ./single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
