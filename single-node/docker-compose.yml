@@ -1,16 +1,15 @@
-# This is the "Full Stack" Wazuh deployment.
-# It runs its OWN Indexer and Dashboard, separated from your main OpenSearch.
-# ⚠️ RESOURCE WARNING: This requires significantly more RAM (~4GB+).
-
 services:
-  # --- 1. Certificate Generator (Runs once to fix EISDIR errors) ---
+  # --- 1. Certificate Generator ---
+  # This runs ONCE to generate the SSL certificates required by Wazuh.
+  # It fixes the "EISDIR" error by populating the 'wazuh_certs' volume.
   generate-certs:
-    image: wazuh/wazuh-certs-tool:4.14.1
+    image: wazuh/wazuh-certs-tool:4.9.0 # Using 4.9.0 tool for 4.9.x compatibility
     command: >
       bash -c '
         if [ ! -f /certs/root-ca.pem ]; then
           /entrypoint.sh
           chmod -R 777 /certs
+          echo "Certificates generated successfully."
         else
           echo "Certificates already exist. Skipping generation."
         fi
@@ -22,7 +21,7 @@ services:
 
   # --- 2. Wazuh Indexer (The Database) ---
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:4.14.1
+    image: wazuh/wazuh-indexer:4.9.2
     restart: always
     ports:
       - "9200" # Internal Dokploy port
@@ -31,6 +30,7 @@ services:
       - "network.host=0.0.0.0"
       - "node.name=wazuh.indexer"
       - "cluster.initial_cluster_manager_nodes=wazuh.indexer"
+      # SSL Configuration using the volume
       - "plugins.security.ssl.http.pemcert_filepath=/usr/share/wazuh-indexer/config/certs/wazuh.indexer.pem"
       - "plugins.security.ssl.http.pemkey_filepath=/usr/share/wazuh-indexer/config/certs/wazuh.indexer-key.pem"
       - "plugins.security.ssl.http.pemtrustedcas_filepath=/usr/share/wazuh-indexer/config/certs/root-ca.pem"
@@ -58,7 +58,7 @@ services:
 
   # --- 3. Wazuh Manager (The Server) ---
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.14.1
+    image: wazuh/wazuh-manager:4.9.2
     restart: always
     ulimits:
       memlock:
@@ -68,17 +68,17 @@ services:
         soft: 655360
         hard: 655360
     ports:
-      - "1514:1514"       # Agent connection (Public)
-      - "1515:1515"       # Agent enrollment (Public)
-      - "514:514/udp"     # Syslog (Public)
+      # Agent ports must be PUBLIC (Host Mode)
+      - "1514:1514"       # Agent connection
+      - "1515:1515"       # Agent enrollment
+      - "514:514/udp"     # Syslog
     expose:
-      - "55000"           # API port (Internal/Proxy)
+      - "55000"           # API port (Internal for Dokploy proxy)
     environment:
-      # Connects to the dedicated wazuh.indexer service
       - INDEXER_URL=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
       - INDEXER_PASSWORD=${WAZUH_INDEXER_PASSWORD}
-      - FILEBEAT_SSL_VERIFICATION_MODE=none
+      # API Credentials
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
@@ -91,6 +91,9 @@ services:
       - wazuh_wodles:/var/ossec/wodles
       - filebeat_etc:/etc/filebeat
       - filebeat_var:/var/lib/filebeat
+      # Certs from volume
+      - wazuh_certs:/etc/filebeat/certs
+      - ./config/wazuh_cluster/wazuh_manager.conf:/wazuh-config-mount/etc/ossec.conf
     networks:
       - dokploy-network
     depends_on:
@@ -98,10 +101,10 @@ services:
 
   # --- 4. Wazuh Dashboard (The UI) ---
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:4.14.1
+    image: wazuh/wazuh-dashboard:4.9.2
     restart: always
     expose:
-      - "5601" # UI Port
+      - "5601" # UI Port (Internal for Dokploy proxy)
     environment:
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
       - INDEXER_USERNAME=admin
