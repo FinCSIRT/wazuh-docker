@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
 
   wazuh.manager:
@@ -5,12 +7,8 @@ services:
     hostname: wazuh.manager
     restart: always
     ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 655360
-        hard: 655360
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 655360, hard: 655360 }
     ports:
       - "1514:1514"
       - "1515:1515"
@@ -20,10 +18,19 @@ services:
       - WAZUH_INDEXER_HOSTS=https://wazuh.indexer:9200
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
-      - INDEXER_USERNAME=${OPENSEARCH_ADMIN_USER:-admin}
-      - INDEXER_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD}
+
+      # API Credentials
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
+
+      # Filebeat TLS (internal only)
+      - FILEBEAT_SSL_CERTIFICATE=/certs/wazuh.manager.pem
+      - FILEBEAT_SSL_CERTIFICATE_KEY=/certs/wazuh.manager-key.pem
+      - FILEBEAT_SSL_CA=/certs/root-ca.pem
+
+      # Indexer credentials
+      - INDEXER_USERNAME=${OPENSEARCH_ADMIN_USER:-admin}
+      - INDEXER_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD}
     volumes:
       - wazuh_api_configuration:/var/ossec/api/configuration
       - wazuh_etc:/var/ossec/etc
@@ -32,9 +39,8 @@ services:
       - wazuh_var_multigroups:/var/ossec/var/multigroups
       - wazuh_active_response:/var/ossec/active-response/bin
       - wazuh_wodles:/var/ossec/wodles
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
+      # mount the WHOLE certificate directory
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates:/certs
     networks:
       - dokploy-network
 
@@ -54,20 +60,18 @@ services:
       - node.max_local_storage_nodes=1
       - plugins.security.allow_default_init_securityindex=true
       - NODES_DN=CN=wazuh.indexer,OU=Wazuh,O=Wazuh,L=California,C=US
+
+      # TLS paths inside container
+      - OPENSEARCH_SSL_CERTIFICATE=/certs/wazuh.indexer.pem
+      - OPENSEARCH_SSL_CERTIFICATE_KEY=/certs/wazuh.indexer-key.pem
+      - OPENSEARCH_SSL_CA=/certs/root-ca.pem
     ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536
-        hard: 65536
+      memlock: { soft: -1, hard: -1 }
+      nofile: { soft: 65536, hard: 65536 }
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+      # mount entire certs folder — prevents file mismatch errors
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates:/certs
     networks:
       - dokploy-network
 
@@ -77,24 +81,30 @@ services:
     hostname: wazuh.dashboard
     restart: always
     ports:
-      - 443:5601
+      - "443:5601"
     environment:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
+
+      # Internal security credentials
       - INDEXER_USERNAME=${OPENSEARCH_ADMIN_USER:-admin}
       - INDEXER_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD}
-      - WAZUH_API_URL=https://wazuh.manager:55000
-      - DASHBOARD_USERNAME=kibanaserver
-      - DASHBOARD_PASSWORD=kibanaserver
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
+
+      # Wazuh API endpoint
+      - WAZUH_API_URL=https://wazuh.manager:55000
+
+      # Dashboard internal TLS (still required)
+      - DASHBOARD_SSL_CERTIFICATE=/certs/wazuh.dashboard.pem
+      - DASHBOARD_SSL_CERTIFICATE_KEY=/certs/wazuh.dashboard-key.pem
+      - DASHBOARD_SSL_CA=/certs/root-ca.pem
     volumes:
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
+      # mount entire certs folder
+      - /etc/dokploy/compose/cti-project-v001-wazuh-pi6qvs/code/single-node/wazuh-certificates:/certs
     depends_on:
       - wazuh.indexer
       - wazuh.manager
@@ -102,6 +112,7 @@ services:
       - dokploy-network
 
 
+# Persistent volumes
 volumes:
   wazuh_api_configuration:
   wazuh_etc:
@@ -114,6 +125,7 @@ volumes:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:
 
+# Dokploy external network
 networks:
   dokploy-network:
     external: true
