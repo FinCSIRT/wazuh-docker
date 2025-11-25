@@ -21,7 +21,7 @@ services:
 
   # --- 2. Wazuh Indexer (The Database) ---
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:4.14.
+    image: wazuh/wazuh-indexer:4.14.1
     restart: always
     ports:
       - "9200" # Internal Dokploy port
@@ -58,7 +58,7 @@ services:
 
   # --- 3. Wazuh Manager (The Server) ---
   wazuh.manager:
-    image: wazuh/wazuh-manager:4.14.
+    image: wazuh/wazuh-manager:4.14.1
     restart: always
     ulimits:
       memlock:
