@@ -20,10 +20,10 @@ services:
       - WAZUH_INDEXER_HOSTS=wazuh.indexer:9200
       - WAZUH_NODE_NAME=manager
       - WAZUH_CLUSTER_NODES=wazuh.manager
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
+      - INDEXER_USERNAME=${OPENSEARCH_ADMIN_USER:-admin}
+      - INDEXER_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD}
+      - API_USERNAME=${WAZUH_API_USER}
+      - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
       - wazuh_api_configuration:/var/ossec/api/configuration
       - wazuh_etc:/var/ossec/etc
@@ -35,6 +35,8 @@ services:
       - ./wazuh-certificates/root-ca.pem:/etc/filebeat/certs/root-ca.pem
       - ./wazuh-certificates/wazuh.manager.pem:/etc/filebeat/certs/filebeat.pem
       - ./wazuh-certificates/wazuh.manager-key.pem:/etc/filebeat/certs/filebeat-key.pem
+    networks:
+      - dokploy-network
 
   wazuh.indexer:
     image: wazuh/wazuh-indexer:5.0.0
@@ -76,13 +78,13 @@ services:
       - SERVER_PORT=5601
       - SERVER_HOST=0.0.0.0
       - OPENSEARCH_HOSTS=https://wazuh.indexer:9200
-      - INDEXER_USERNAME=admin
-      - INDEXER_PASSWORD=admin
+      - INDEXER_USERNAME=${OPENSEARCH_ADMIN_USER:-admin}
+      - INDEXER_PASSWORD=${OPENSEARCH_ADMIN_PASSWORD}
       - WAZUH_API_URL=https://wazuh.manager
       - DASHBOARD_USERNAME=kibanaserver
       - DASHBOARD_PASSWORD=kibanaserver
-      - API_USERNAME=wazuh-wui
-      - API_PASSWORD=MyS3cr37P450r.*-
+      - API_USERNAME=${WAZUH_API_USER}
+      - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
       - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
       - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
@@ -94,6 +96,8 @@ services:
     links:
       - wazuh.indexer:wazuh.indexer
       - wazuh.manager:wazuh.manager
+    networks:
+      - dokploy-network
 
 volumes:
   wazuh_api_configuration:
@@ -106,3 +110,7 @@ volumes:
   wazuh-indexer-data:
   wazuh-dashboard-config:
   wazuh-dashboard-custom:
+
+networks:
+  dokploy-network:
+    external: true
