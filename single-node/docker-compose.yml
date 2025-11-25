@@ -63,11 +63,11 @@ services:
         hard: 65536
     volumes:
       - wazuh-indexer-data:/var/lib/wazuh-indexer
-      - ./single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
-      - ./single-node/wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
-      - ./single-node/wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
-      - ./single-node/wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
-      - ./single-node/wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
+      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-indexer/config/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.indexer-key.pem:/usr/share/wazuh-indexer/config/certs/indexer-key.pem
+      - ./wazuh-certificates/wazuh.indexer.pem:/usr/share/wazuh-indexer/config/certs/indexer.pem
+      - ./wazuh-certificates/admin.pem:/usr/share/wazuh-indexer/config/certs/admin.pem
+      - ./wazuh-certificates/admin-key.pem:/usr/share/wazuh-indexer/config/certs/admin-key.pem
     networks:
       - dokploy-network
 
@@ -90,9 +90,9 @@ services:
       - API_USERNAME=${WAZUH_API_USER}
       - API_PASSWORD=${WAZUH_API_PASSWORD}
     volumes:
-      - ./single-node/wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
-      - ./single-node/wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
-      - ./single-node/wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
+      - ./wazuh-certificates/wazuh.dashboard.pem:/usr/share/wazuh-dashboard/config/certs/dashboard.pem
+      - ./wazuh-certificates/wazuh.dashboard-key.pem:/usr/share/wazuh-dashboard/config/certs/dashboard-key.pem
+      - ./wazuh-certificates/root-ca.pem:/usr/share/wazuh-dashboard/config/certs/root-ca.pem
       - wazuh-dashboard-config:/usr/share/wazuh-dashboard/data/wazuh/config
       - wazuh-dashboard-custom:/usr/share/wazuh-dashboard/plugins/wazuh/public/assets/custom
     depends_on:
