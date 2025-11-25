@@ -1,7 +1,7 @@
 # Wazuh App Copyright (C) 2017, Wazuh Inc. (License GPLv2)
 services:
   wazuh.manager:
-    image: wazuh/wazuh-manager:5.0.0
+    image: wazuh/wazuh-manager:4.14.1
     hostname: wazuh.manager
     restart: always
     ulimits:
@@ -40,7 +40,7 @@ services:
       - dokploy-network
 
   wazuh.indexer:
-    image: wazuh/wazuh-indexer:5.0.0
+    image: wazuh/wazuh-indexer:4.14.1
     hostname: wazuh.indexer
     restart: always
     # Removed port 9200 mapping - internal only
@@ -70,7 +70,7 @@ services:
       - dokploy-network
 
   wazuh.dashboard:
-    image: wazuh/wazuh-dashboard:5.0.0
+    image: wazuh/wazuh-dashboard:4.14.1
     hostname: wazuh.dashboard
     restart: always
     # Removed port 443 mapping - using Traefik instead
